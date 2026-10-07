@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeSplit — Shared expenses, simplified</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+```
+<header class="navbar">
+    <div class="logo">
+        <span class="logo-mark">
+            <span></span>
+            <span></span>
+        </span>
+        <span>Home<span class="logo-accent">Split</span></span>
+    </div>
+
+    <div class="nav-actions">
+        <button class="nav-link" onclick="showLogin()">Log in</button>
+        <button class="nav-button" onclick="showLogin()">Get started</button>
+    </div>
+</header>
+
+<main class="hero">
+
+    <section class="hero-content">
+
+        <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            Shared living, made simple
+        </div>
+
+        <h1>
+            Split expenses.<br>
+            <span>Stay in sync.</span>
+        </h1>
+
+        <p class="hero-text">
+            HomeSplit helps households track expenses, share costs,
+            understand balances, and settle up without the confusion.
+        </p>
+
+        <div class="hero-actions">
+            <button class="primary-button" onclick="showLogin()">
+                Get started
+                <span>→</span>
+            </button>
+
+            <button class="secondary-button" onclick="showLogin()">
+                I already have an account
+            </button>
+        </div>
+
+        <div class="trust-line">
+            <span>✓</span> Simple expense tracking
+            <span>✓</span> Clear balances
+            <span>✓</span> Easy settlements
+        </div>
+
+    </section>
+
+
+    <section class="visual-section">
+
+        <div class="dashboard-preview">
+
+            <div class="preview-header">
+                <div>
+                    <small>HOUSEHOLD</small>
+                    <h3>My Home</h3>
+                </div>
+
+                <div class="member-avatars">
+                    <span>V</span>
+                    <span>A</span>
+                    <span>P</span>
+                    <span>+2</span>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div>
+                    <small>Total household spending</small>
+                    <strong>₹8,500</strong>
+                </div>
+
+                <div class="summary-icon">₹</div>
+            </div>
+
+            <div class="preview-title">
+                <span>Recent expenses</span>
+                <span>View all</span>
+            </div>
+
+            <div class="expense-item">
+                <div class="expense-icon grocery">🛒</div>
+
+                <div class="expense-info">
+                    <strong>Groceries</strong>
+                    <small>Vaishnavi paid</small>
+                </div>
+
+                <strong>₹1,200</strong>
+            </div>
+
+            <div class="expense-item">
+                <div class="expense-icon food">🍕</div>
+
+                <div class="expense-info">
+                    <strong>Dinner</strong>
+                    <small>Anu paid</small>
+                </div>
+
+                <strong>₹900</strong>
+            </div>
+
+            <div class="expense-item">
+                <div class="expense-icon bill">💡</div>
+
+                <div class="expense-info">
+                    <strong>Electricity</strong>
+                    <small>Priya paid</small>
+                </div>
+
+                <strong>₹2,400</strong>
+            </div>
+
+            <div class="balance-preview">
+                <div>
+                    <small>Your balance</small>
+                    <strong>+ ₹1,100</strong>
+                </div>
+
+                <span>To receive</span>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<section class="login-overlay" id="loginOverlay">
+
+    <div class="login-box">
+
+        <button class="close-button" onclick="closeLogin()">×</button>
+
+        <div class="login-logo">
+            <span class="logo-mark">
+                <span></span>
+                <span></span>
+            </span>
+            <strong>Home<span>Split</span></strong>
+        </div>
+
+        <h2>Welcome back</h2>
+
+        <p>Log in to manage your household expenses.</p>
+
+        <form id="loginForm">
+
+            <label for="email">Email</label>
+            <input
+                type="email"
+                id="email"
+                placeholder="you@example.com"
+                required
+            >
+
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                placeholder="Enter your password"
+                required
+            >
+
+            <button type="submit" class="login-button">
+                Log in
+            </button>
+
+            <p id="loginMessage"></p>
+
+        </form>
+
+        <div class="register-line">
+            Don't have an account?
+            <button type="button" onclick="showRegister()">
+                Create one
+            </button>
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="login-overlay" id="registerOverlay">
+
+    <div class="login-box">
+
+        <button class="close-button" onclick="closeRegister()">×</button>
+
+        <div class="login-logo">
+            <span class="logo-mark">
+                <span></span>
+                <span></span>
+            </span>
+            <strong>Home<span>Split</span></strong>
+        </div>
+
+        <h2>Create your account</h2>
+
+        <p>Start managing shared expenses with HomeSplit.</p>
+
+        <form id="registerForm">
+
+            <label for="registerName">Name</label>
+            <input
+                type="text"
+                id="registerName"
+                placeholder="Your name"
+                required
+            >
+
+            <label for="registerEmail">Email</label>
+            <input
+                type="email"
+                id="registerEmail"
+                placeholder="you@example.com"
+                required
+            >
+
+            <label for="registerPassword">Password</label>
+            <input
+                type="password"
+                id="registerPassword"
+                placeholder="Create a password"
+                required
+            >
+
+            <button type="submit" class="login-button">
+                Create account
+            </button>
+
+            <p id="registerMessage"></p>
+
+        </form>
+
+        <div class="register-line">
+            Already have an account?
+            <button type="button" onclick="showLogin()">
+                Log in
+            </button>
+        </div>
+
+    </div>
+
+</section>
+
+
+<script src="js/app.js"></script>
+```
+
+</body>
+</html>
