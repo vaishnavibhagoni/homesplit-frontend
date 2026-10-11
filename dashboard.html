@@ -1333,7 +1333,7 @@
     async function loadMembersFromBackend() {
     try {
         const response = await fetch(
-            `http://localhost:8080/household-members/household/${householdId}/users`
+            `https://homesplit-backend-2.onrender.com/household-members/household/${householdId}/users`
         );
 
         if (!response.ok) {
@@ -1356,7 +1356,7 @@
 async function loadExpensesFromBackend() {
     try {
         const response = await fetch(
-            `http://localhost:8080/expenses/household/${householdId}`
+            `https://homesplit-backend-2.onrender.com/expenses/household/${householdId}`
         );
 
         if (!response.ok) {
@@ -1397,7 +1397,7 @@ async function loadExpensesFromBackend() {
 async function loadPaymentHistory() {
     try {
         const response = await fetch(
-            `http://localhost:8080/settlement-payments/household/${householdId}`
+            `https://homesplit-backend-2.onrender.com/settlement-payments/household/${householdId}`
         );
 
         if (!response.ok) {
@@ -1414,7 +1414,7 @@ async function loadPaymentHistory() {
 async function loadSplitsForExpense(expenseId) {
     try {
         const response = await fetch(
-            `http://localhost:8080/expense-splits/expense/${expenseId}`
+            `https://homesplit-backend-2.onrender.com/expense-splits/expense/${expenseId}`
         );
 
         if (!response.ok) {
@@ -1737,7 +1737,7 @@ function renderExpenses() {
 
             try {
                 const response = await fetch(
-                    `http://localhost:8080/expenses/${expense.id}`,
+                    `https://homesplit-backend-2.onrender.com/expenses/${expense.id}`,
                     { method: "DELETE" }
                 );
 
@@ -1931,7 +1931,7 @@ function renderExpenses() {
                 try {
                     
                  const response = await fetch(
-                `http://localhost:8080/household-members/household/${householdId}/user/${userId}`,
+                `https://homesplit-backend-2.onrender.com/household-members/household/${householdId}/user/${userId}`,
                  { method: "DELETE" }
 );
 
@@ -1994,7 +1994,7 @@ async function addMember() {
     try {
 
         const response = await fetch(
-            "http://localhost:8080/household-members/add",
+            "https://homesplit-backend-2.onrender.com/household-members/add",
             {
                 method: "POST",
                 headers: {
@@ -2075,7 +2075,7 @@ async function addExpense() {
     try {
         // 1. Save the expense.
         const response = await fetch(
-            "http://localhost:8080/expenses",
+            "https://homesplit-backend-2.onrender.com/expenses",
             {
                 method: "POST",
                 headers: {
@@ -2098,7 +2098,7 @@ async function addExpense() {
 
         // 2. Save equal shares for the selected members.
         const splitResponse = await fetch(
-            `http://localhost:8080/expense-splits/equal?expenseId=${savedExpense.id}&totalAmount=${amount}`,
+            `https://homesplit-backend-2.onrender.com/expense-splits/equal?expenseId=${savedExpense.id}&totalAmount=${amount}`,
             {
                 method: "POST",
                 headers: {
@@ -2506,7 +2506,7 @@ async function markSettlementPaid(settlementId) {
 
     try {
         const response = await fetch(
-            "http://localhost:8080/settlement-payments",
+            "https://homesplit-backend-2.onrender.com/settlement-payments",
             {
                 method: "POST",
                 headers: {
@@ -2835,7 +2835,7 @@ async function initialise() {
 
     try {
         const response = await fetch(
-            `http://localhost:8080/households/user/${userId}`
+            `https://homesplit-backend-2.onrender.com/households/user/${userId}`
         );
 
         if (!response.ok) {
@@ -2874,8 +2874,6 @@ households.forEach(household => {
                 selectedHouseholdId
             );
         }
-        
-selector.value = String(selectedHouseholdId);
 
         householdId = selectedHouseholdId;
 
@@ -2903,41 +2901,6 @@ selector.value = String(selectedHouseholdId);
     }
 }
 
-
-async function switchHousehold(newHouseholdId) {
-    const id = Number(newHouseholdId);
-
-    if (!Number.isInteger(id) || id <= 0 || id === householdId) {
-        return;
-    }
-
-    householdId = id;
-    localStorage.setItem("homesplitHouseholdId", String(id));
-
-    const selector = document.getElementById("householdSelector");
-    const selectedOption = selector.options[selector.selectedIndex];
-
-    householdName = selectedOption
-        ? selectedOption.textContent.replace(/ \(ID: \d+\)$/, "")
-        : "My Household";
-
-    localStorage.setItem("homesplitHousehold", householdName);
-    document.getElementById("householdName").textContent = householdName;
-
-    members = [];
-    expenses = [];
-    paymentHistory = [];
-
-    await loadMembersFromBackend();
-    await loadExpensesFromBackend();
-    await loadPaymentHistory();
-
-    renderMembers();
-    renderExpenses();
-    renderBalances();
-    renderSettlements();
-    updateDashboard();
-}
 
 initialise();
 
