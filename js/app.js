@@ -34,7 +34,7 @@ message.innerText = "Logging in...";
 
 try {
 
-    const response = await fetch("http://localhost:8080/users/login", {
+    const response = await fetch("https://homesplit-backend-2.onrender.com/users/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -92,7 +92,7 @@ message.innerText = "Creating account...";
 
 try {
 
-    const response = await fetch("http://localhost:8080/users/register", {
+    const response = await fetch("https://homesplit-backend-2.onrender.com/users/register", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
