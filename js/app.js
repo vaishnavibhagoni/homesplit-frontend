@@ -23,7 +23,7 @@ registerOverlay.style.display = "none";
 
 document.getElementById("loginForm").addEventListener("submit", async function(event) {
 
-```
+
 event.preventDefault();
 
 const email = document.getElementById("email").value;
@@ -45,20 +45,24 @@ try {
         })
     });
 
-    const result = await response.text();
+const result = await response.json();
 
-    if (result.startsWith("Login successful!")) {
+if (response.ok) {
 
-        message.innerText = "Login successful!";
+    localStorage.setItem("homesplitUserId", result.userId);
+    localStorage.setItem("homesplitUserName", result.name);
+    localStorage.setItem("homesplitUserEmail", result.email);
 
-        setTimeout(function() {
-            window.location.href = "dashboard.html";
-        }, 500);
+    message.innerText = "Login successful!";
 
-    } else {
+    setTimeout(function() {
+        window.location.href = "dashboard.html";
+    }, 500);
 
-        message.innerText = result;
-    }
+} else {
+
+    message.innerText = result.message || "Login failed.";
+}
 
 } catch (error) {
 
@@ -67,7 +71,7 @@ try {
 
     console.error(error);
 }
-```
+
 
 });
 
@@ -75,7 +79,7 @@ try {
 
 document.getElementById("registerForm").addEventListener("submit", async function(event) {
 
-```
+
 event.preventDefault();
 
 const name = document.getElementById("registerName").value;
@@ -122,7 +126,7 @@ try {
 
     console.error(error);
 }
-```
+
 
 });
 
@@ -130,7 +134,7 @@ try {
 
 window.addEventListener("click", function(event) {
 
-```
+
 if (event.target === loginOverlay) {
     closeLogin();
 }
@@ -138,6 +142,6 @@ if (event.target === loginOverlay) {
 if (event.target === registerOverlay) {
     closeRegister();
 }
-```
+
 
 });
