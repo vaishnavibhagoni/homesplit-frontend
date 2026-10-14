@@ -1272,15 +1272,24 @@
         </div>
 
         <div class="form-group">
-            <label>Member name</label>
+    <label>Member name</label>
+    <input
+        type="text"
+        id="newMemberName"
+        placeholder="Example: Priya"
+        required
+    >
+</div>
 
-            <input
-                type="text"
-                id="newMemberName"
-                placeholder="Example: Priya"
-            >
-        </div>
-
+<div class="form-group">
+    <label>Member email</label>
+    <input
+        type="email"
+        id="newMemberEmail"
+        placeholder="Example: priya@example.com"
+        required
+    >
+</div>
         <div class="modal-actions">
 
             <button
@@ -1355,12 +1364,23 @@
 
 async function loadExpensesFromBackend() {
     try {
+        if (
+            householdId === null ||
+            householdId === undefined ||
+            householdId === "" ||
+            String(householdId) === "null"
+        ) {
+            console.error("Cannot load expenses: householdId is missing.");
+            showToast("Please select a household first.");
+            return;
+        }
+
         const response = await fetch(
             `https://homesplit-backend-2.onrender.com/expenses/household/${householdId}`
         );
 
         if (!response.ok) {
-            throw new Error("Failed to load expenses");
+            throw new Error("Failed to load expenses: " + response.status);
         }
 
         const data = await response.json();
@@ -1370,19 +1390,17 @@ async function loadExpensesFromBackend() {
                 const splits = await loadSplitsForExpense(item.id);
 
                 return {
-    id: item.id,
-    description: item.description,
-    amount: Number(item.amount),
-    paidBy: String(item.paidByUserId),
-    createdAt: item.createdAt || null,
-
-    sharedBy: splits.map(split => String(split.userId)),
-
-    splits: splits.map(split => ({
-        userId: String(split.userId),
-        shareAmount: Number(split.shareAmount)
-    }))
-};
+                    id: item.id,
+                    description: item.description,
+                    amount: Number(item.amount),
+                    paidBy: String(item.paidByUserId),
+                    createdAt: item.createdAt || null,
+                    sharedBy: splits.map(split => String(split.userId)),
+                    splits: splits.map(split => ({
+                        userId: String(split.userId),
+                        shareAmount: Number(split.shareAmount)
+                    }))
+                };
             })
         );
 
@@ -1394,6 +1412,7 @@ async function loadExpensesFromBackend() {
         showToast("Could not load expenses from the backend.");
     }
 }
+
 async function loadPaymentHistory() {
     try {
         const response = await fetch(
@@ -1884,11 +1903,17 @@ function renderExpenses() {
        MEMBERS
     ========================================= */
 
-    function renderMembers() {
+function renderMembers() {
     const list = document.getElementById("memberList");
+
+    if (!list) {
+        console.error("Member list element was not found.");
+        return;
+    }
+
     list.innerHTML = "";
 
-    if (members.length === 0) {
+    if (!members || members.length === 0) {
         list.innerHTML = `
             <div class="empty">
                 <div class="empty-icon">👥</div>
@@ -1898,23 +1923,26 @@ function renderExpenses() {
         return;
     }
 
-    members.forEach((member, index) => {
-        const name = typeof member === "string" ? member : member.name;
-        const userId = typeof member === "string" ? null : member.id;
+    members.forEach((member) => {
+        const name =
+            typeof member === "string" ? member : member.name;
+
+        const userId =
+            typeof member === "string" ? null : member.id;
 
         const card = document.createElement("div");
         card.className = "member-card";
 
         card.innerHTML = `
-            <div class="avatar">${escapeHTML(getInitial(name))}</div>
+            <div class="avatar">${escapeHTML(getInitial(name || "?"))}</div>
             <div class="member-info">
-                <div class="member-name">${escapeHTML(name)}</div>
+                <div class="member-name">${escapeHTML(name || "Unknown member")}</div>
                 <div class="member-label">Household member</div>
             </div>
             ${
-                userId === null
+                userId == null
                     ? ""
-                    : `<button class="remove-member-btn" type="button">Remove</button>`
+                    : '<button class="remove-member-btn" type="button">Remove</button>'
             }
         `;
 
@@ -1922,35 +1950,65 @@ function renderExpenses() {
 
         if (removeButton) {
             removeButton.addEventListener("click", async () => {
-                if (userId === null) return;
-
-                if (!confirm(`Remove ${name} from this household? Their account and past expenses will be kept.`)) {
+                if (!confirm(
+                    `Remove ${name} from this household? Their account and past expenses will be kept.`
+                )) {
                     return;
                 }
 
-                try {
-                    
-                 const response = await fetch(
-                `https://homesplit-backend-2.onrender.com/household-members/household/${householdId}/user/${userId}`,
-                 { method: "DELETE" }
-);
+                if (householdId == null || userId == null) {
+                    showToast("Missing household or member ID.");
+                    console.error("Cannot remove member:", {
+                        householdId,
+                        userId
+                    });
+                    return;
+                }
 
+                removeButton.disabled = true;
+                removeButton.textContent = "Removing...";
+
+                try {
+                    const url =
+                        `https://homesplit-backend-2.onrender.com/household-members/household/${encodeURIComponent(householdId)}/user/${encodeURIComponent(userId)}`;
+
+                    const response = await fetch(url, {
+                        method: "DELETE"
+                    });
+
+                    const responseText = await response.text();
 
                     if (!response.ok) {
-                        throw new Error("Could not remove member");
+                        console.error("Remove-member API error:", {
+                            status: response.status,
+                            response: responseText,
+                            url
+                        });
+
+                        throw new Error(
+                            `Server returned HTTP ${response.status}: ` +
+                            (responseText || "No details provided")
+                        );
                     }
 
-                    // Reload the current household's members.
                     await loadMembersFromBackend();
 
                     renderMembers();
                     renderBalances();
                     renderSettlements();
 
-                    showToast(`${name} removed from household`);
+                    showToast(`${name} removed from household.`);
                 } catch (error) {
                     console.error("Remove member failed:", error);
-                    alert("Could not remove member. Check that the backend is running.");
+
+                    showToast(
+                        error.message.includes("Failed to fetch")
+                            ? "Could not reach the backend. Check the network request."
+                            : error.message
+                    );
+
+                    removeButton.disabled = false;
+                    removeButton.textContent = "Remove";
                 }
             });
         }
@@ -1958,33 +2016,40 @@ function renderExpenses() {
         list.appendChild(card);
     });
 }
-    /* =========================================
+
+  /* =========================================
        ADD MEMBER
     ========================================= */
 async function addMember() {
+    const nameInput = document.getElementById("newMemberName");
+    const emailInput = document.getElementById("newMemberEmail");
 
-    const input =
-        document.getElementById("newMemberName");
-
-    const name =
-        input.value.trim();
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
 
     if (!name) {
         showToast("Please enter a member name.");
         return;
     }
 
-    const alreadyExists =
-        members.some(member => {
+    if (!email || !emailInput.checkValidity()) {
+        showToast("Please enter a valid member email.");
+        emailInput.focus();
+        return;
+    }
 
-            const existingName =
-                typeof member === "string"
-                    ? member
-                    : member.name;
+    if (!householdId) {
+        showToast("No household selected. Please select a household first.");
+        return;
+    }
 
-            return existingName.toLowerCase() ===
-                name.toLowerCase();
-        });
+    const alreadyExists = members.some(member => {
+        const existingName =
+            typeof member === "string" ? member : member.name;
+
+        return existingName &&
+            existingName.toLowerCase() === name.toLowerCase();
+    });
 
     if (alreadyExists) {
         showToast("This member already exists.");
@@ -1992,7 +2057,6 @@ async function addMember() {
     }
 
     try {
-
         const response = await fetch(
             "https://homesplit-backend-2.onrender.com/household-members/add",
             {
@@ -2003,37 +2067,57 @@ async function addMember() {
                 body: JSON.stringify({
                     householdId: householdId,
                     name: name,
-                    email: name.toLowerCase().replace(/\s+/g, "") + "@homesplit.com"
+                    email: email
                 })
             }
         );
 
-        if (!response.ok) {
-            throw new Error("Could not add member");
-        }
+        const responseText = await response.text();
+        let result;
 
-        const newMember = await response.json();
+        try {
+            result = responseText ? JSON.parse(responseText) : {};
+        } catch {
+            result = { message: responseText };
+        }
+if (!response.ok) {
+    console.error("Add member failed:", response.status, result);
+
+    const errorMessage =
+        result.message ||
+        result.error ||
+        result.detail ||
+        `Could not add member (HTTP ${response.status}).`;
+
+    showToast(errorMessage);
+    return;
+}
+
+        const newMember = result.member || result;
+
+        if (!newMember || typeof newMember !== "object" ||
+            !newMember.name) {
+            console.error("Unexpected add-member response:", result);
+            showToast("The server response was unexpected. Check the console.");
+            return;
+        }
 
         members.push(newMember);
 
-        input.value = "";
+        nameInput.value = "";
+        emailInput.value = "";
 
         closeModal("memberModal");
-
         updateDashboard();
-
         renderMembers();
 
         showToast(`${name} added to the household.`);
 
     } catch (error) {
-
         console.error("Error adding member:", error);
-
-        showToast("Could not add member.");
+        showToast("Could not connect to HomeSplit. Please try again.");
     }
-}
-    
+}  
 async function addExpense() {
     const description = document
         .getElementById("expenseDescription")
@@ -2823,7 +2907,7 @@ function populateExpensePeople() {
     ========================================= */
     
 async function initialise() {
-    document.getElementById("householdName").textContent = householdName;
+    
 
     const userId = localStorage.getItem("homesplitUserId");
 
@@ -2859,21 +2943,24 @@ households.forEach(household => {
             return;
         }
 
-        let selectedHouseholdId = Number(
-            localStorage.getItem("homesplitHouseholdId")
-        );
+       
+const savedHouseholdId = Number(
+    localStorage.getItem("homesplitHouseholdId")
+);
 
-        const selectedHousehold = households.find(
-            household => household.id === selectedHouseholdId
-        );
+const selectedHousehold = households.find(
+    household => household.id === savedHouseholdId
+);
 
-        if (!selectedHousehold) {
-            selectedHouseholdId = households[0].id;
-            localStorage.setItem(
-                "homesplitHouseholdId",
-                selectedHouseholdId
-            );
-        }
+// Use the saved household only if it belongs to this logged-in user.
+const selectedHouseholdId = selectedHousehold
+    ? selectedHousehold.id
+    : households[0].id;
+
+localStorage.setItem(
+    "homesplitHouseholdId",
+    String(selectedHouseholdId)
+);
 
         householdId = selectedHouseholdId;
 
@@ -2887,10 +2974,10 @@ households.forEach(household => {
         document.getElementById("householdName").textContent = householdName;
 
         await loadMembersFromBackend();
-        await loadExpensesFromBackend();
-        await loadPaymentHistory();
+renderMembers();
 
-        renderMembers();
+await loadExpensesFromBackend();
+await loadPaymentHistory();
         renderBalances();
         renderSettlements();
         updateDashboard();
